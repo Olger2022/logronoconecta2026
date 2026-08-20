@@ -7,6 +7,7 @@ import { ReportIncidentChat } from './ReportIncidentChat';
 import { validateName, validateEcuadorianCedula, validatePhone, validateEmail } from '../utils/validation';
 import { shuarVoiceService } from '../utils/shuarVoiceService';
 import { ShuarVoiceHUD } from './ShuarVoiceHUD';
+import { MunicipalDirectory } from './MunicipalDirectory';
 import { 
   PlusCircle, 
   MapPin, 
@@ -1656,18 +1657,18 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                 </div>
 
                 {/* TABLA PERSONALIZADA DE ESTADO DE TRÁMITES Y REPORTES RECIENTES */}
-                <div className="bg-gradient-to-br from-slate-900 via-[#0A4191] to-slate-950 text-white rounded-3xl border-2 border-blue-400/80 shadow-xl overflow-hidden space-y-0">
+                <div className="bg-gradient-to-br from-slate-900 via-[#0A4191] to-slate-950 text-white rounded-3xl border-2 border-blue-400/80 shadow-xl overflow-hidden space-y-0 min-h-[540px] flex flex-col justify-between">
                   {/* Table Header Controls */}
-                  <div className="p-4 bg-slate-950/80 border-b border-blue-400/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center space-x-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-[#0A4191] text-white flex items-center justify-center shadow-xs shrink-0">
-                        <FileText className="w-5 h-5 stroke-[2.5]" />
+                  <div className="p-5 sm:p-6 bg-slate-950/80 border-b border-blue-400/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-[#0A4191] text-white flex items-center justify-center shadow-md shrink-0 border border-blue-300/30">
+                        <FileText className="w-6 h-6 stroke-[2.5]" />
                       </div>
                       <div>
-                        <h3 className="font-extrabold text-sm text-white leading-tight">
+                        <h3 className="font-extrabold text-base sm:text-lg text-white leading-tight">
                           Tabla de Seguimiento de Solicitudes y Trámites
                         </h3>
-                        <p className="text-[10px] text-blue-200 font-medium">
+                        <p className="text-xs text-blue-200 font-medium mt-0.5">
                           Monitoreo en tiempo real del progreso municipal
                         </p>
                       </div>
@@ -1676,27 +1677,27 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                     <button
                       type="button"
                       onClick={() => setCitizenTab('mis_reportes')}
-                      className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/40 text-blue-200 hover:text-white border border-blue-400/40 rounded-xl font-extrabold text-xs transition-colors flex items-center space-x-1 cursor-pointer shrink-0"
+                      className="px-4 py-2.5 bg-blue-500/20 hover:bg-blue-500/40 text-blue-200 hover:text-white border border-blue-400/40 rounded-xl font-extrabold text-xs sm:text-sm transition-all flex items-center space-x-1.5 cursor-pointer shrink-0 shadow-xs active:scale-95"
                     >
                       <span>Ver Todos en Mis Reportes</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
+                      <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
 
                   {/* Custom Styled Table */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs border-collapse">
+                  <div className="overflow-x-auto flex-1">
+                    <table className="w-full text-left text-xs sm:text-sm border-collapse h-full">
                       <thead>
-                        <tr className="bg-slate-950/60 text-blue-200 font-extrabold uppercase text-[10px] tracking-wider border-b border-white/10">
-                          <th className="py-3 px-3.5">Código / Trámite</th>
-                          <th className="py-3 px-3.5 hidden md:table-cell">Categoría & Sector</th>
-                          <th className="py-3 px-3.5">Fecha</th>
-                          <th className="py-3 px-3.5">Estado & Avance</th>
-                          <th className="py-3 px-3.5 text-center">Gestión</th>
+                        <tr className="bg-slate-950/60 text-blue-200 font-extrabold uppercase text-[11px] tracking-wider border-b border-white/10">
+                          <th className="py-4 px-4 sm:px-5">Código / Trámite</th>
+                          <th className="py-4 px-4 sm:px-5 hidden md:table-cell">Categoría & Sector</th>
+                          <th className="py-4 px-4 sm:px-5">Fecha</th>
+                          <th className="py-4 px-4 sm:px-5">Estado & Avance</th>
+                          <th className="py-4 px-4 sm:px-5 text-center">Gestión</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-white/10 text-slate-100 text-xs">
-                        {incidents.slice(0, 4).map((inc) => {
+                      <tbody className="divide-y divide-white/10 text-slate-100 text-xs sm:text-sm">
+                        {incidents.slice(0, 7).map((inc) => {
                           let badgeBg = 'bg-amber-400 text-slate-950 font-black';
                           let progressPercent = '65%';
                           let statusLabel = 'En Proceso';
@@ -1717,32 +1718,32 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
 
                           return (
                             <tr key={inc.id} className="hover:bg-white/10 transition-colors">
-                              <td className="py-3 px-3.5 font-bold">
-                                <div className="font-mono text-[10px] text-amber-300 bg-black/40 px-2 py-0.5 rounded-md inline-block border border-white/10 mb-0.5">
+                              <td className="py-4.5 sm:py-5 px-4 sm:px-5 font-bold">
+                                <div className="font-mono text-[11px] text-amber-300 bg-black/40 px-2.5 py-0.5 rounded-md inline-block border border-white/10 mb-1">
                                   {inc.code}
                                 </div>
-                                <div className="text-white font-extrabold text-xs line-clamp-1">{inc.title}</div>
+                                <div className="text-white font-extrabold text-xs sm:text-sm line-clamp-1">{inc.title}</div>
                               </td>
 
-                              <td className="py-3 px-3.5 hidden md:table-cell text-slate-300 font-medium">
-                                <span className="text-blue-300 font-bold block">{inc.category}</span>
-                                <span className="text-[10px] text-slate-400">{inc.location.sector}</span>
+                              <td className="py-4.5 sm:py-5 px-4 sm:px-5 hidden md:table-cell text-slate-300 font-medium">
+                                <span className="text-blue-300 font-bold block text-xs sm:text-sm">{inc.category}</span>
+                                <span className="text-[11px] text-slate-400">{inc.location.sector}</span>
                               </td>
 
-                              <td className="py-3 px-3.5 font-mono text-[11px] text-blue-200">
+                              <td className="py-4.5 sm:py-5 px-4 sm:px-5 font-mono text-xs sm:text-sm text-blue-200">
                                 {inc.createdAt ? inc.createdAt.split('T')[0] : '12/08/2026'}
                               </td>
 
-                              <td className="py-3 px-3.5">
-                                <div className="flex items-center space-x-2 mb-1">
-                                  <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase font-black ${badgeBg}`}>
+                              <td className="py-4.5 sm:py-5 px-4 sm:px-5">
+                                <div className="flex items-center space-x-2.5 mb-1.5">
+                                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] uppercase font-black ${badgeBg}`}>
                                     {statusLabel}
                                   </span>
-                                  <span className="text-[10px] font-mono text-blue-200 font-bold">{progressPercent}</span>
+                                  <span className="text-xs font-mono text-blue-200 font-bold">{progressPercent}</span>
                                 </div>
-                                <div className="w-24 sm:w-28 h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/20">
+                                <div className="w-28 sm:w-36 h-2 bg-black/50 rounded-full overflow-hidden border border-white/20">
                                   <div
-                                    className={`h-full rounded-full ${
+                                    className={`h-full rounded-full transition-all duration-500 ${
                                       inc.status === 'resuelto'
                                         ? 'bg-emerald-400'
                                         : inc.status === 'reportado'
@@ -1754,14 +1755,14 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                                 </div>
                               </td>
 
-                              <td className="py-3 px-3.5 text-center">
+                              <td className="py-4.5 sm:py-5 px-4 sm:px-5 text-center">
                                 <button
                                   type="button"
                                   onClick={() => setSelectedIncident(inc)}
-                                  className="px-2.5 py-1.5 bg-white/15 hover:bg-white/30 text-white border border-white/30 rounded-xl font-extrabold text-[11px] transition-all cursor-pointer shadow-2xs inline-flex items-center space-x-1"
+                                  className="px-3.5 py-2 bg-white/15 hover:bg-white/30 text-white border border-white/30 rounded-xl font-extrabold text-xs transition-all cursor-pointer shadow-2xs inline-flex items-center space-x-1.5 active:scale-95"
                                 >
                                   <span>Seguimiento</span>
-                                  <ChevronRight className="w-3.5 h-3.5" />
+                                  <ChevronRight className="w-4 h-4" />
                                 </button>
                               </td>
                             </tr>
@@ -1772,90 +1773,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                   </div>
                 </div>
 
-                {/* Contenedor: Mapa Georreferenciado del Cantón Logroño */}
-                <div className="bg-gradient-to-br from-white via-slate-50 to-blue-50/50 dark:from-slate-900 dark:to-slate-900 border-2 border-[#0A4191] rounded-3xl p-3 sm:p-4 space-y-3 shadow-md">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5 gap-2">
-                    <div className="flex items-center space-x-2.5">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 text-[#0A4191] flex items-center justify-center border border-blue-200 shrink-0 shadow-2xs">
-                        <MapPin className="w-5 h-5 text-[#0A4191] stroke-[2.5]" />
-                      </div>
-                      <div>
-                        <h4 className="font-extrabold text-sm text-slate-900 dark:text-white leading-tight">
-                          Mapa Georreferenciado del Cantón Logroño
-                        </h4>
-                        <p className="text-[11px] text-slate-500 font-medium">
-                          Ubicación en tiempo real de incidencias reportadas en Logroño Centro, Yaupi y Shimpis.
-                        </p>
-                      </div>
-                    </div>
 
-                    <div className="flex flex-wrap items-center space-x-2 self-end sm:self-auto shrink-0 gap-y-2">
-                      {/* Sector Dropdown Combobox */}
-                      <div className="border border-slate-300 dark:border-slate-700 rounded-xl px-2.5 py-1 bg-white dark:bg-slate-800 shadow-2xs">
-                        <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider block leading-none mb-0.5">
-                          Sectores de Logroño
-                        </span>
-                        <select
-                          value={inicioMapSectorFilter}
-                          onChange={(e) => setInicioMapSectorFilter(e.target.value)}
-                          className="bg-transparent text-xs font-black text-slate-900 dark:text-white outline-none cursor-pointer pr-1"
-                        >
-                          <option value="Todos">Todos los Sectores</option>
-                          <option value="Logroño Centro (Cabecera)">Logroño Centro</option>
-                          <option value="Parroquia Yaupi">Parroquia Yaupi</option>
-                          <option value="Parroquia Shimpis">Parroquia Shimpis</option>
-                        </select>
-                      </div>
-
-                      {/* Filter Category Box */}
-                      <div className="border border-slate-300 dark:border-slate-700 rounded-xl px-2.5 py-1 bg-white dark:bg-slate-800 shadow-2xs">
-                        <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider block leading-none mb-0.5">
-                          Filtrar Categoría en Mapa
-                        </span>
-                        <select
-                          value={inicioMapCategoryFilter}
-                          onChange={(e) => setInicioMapCategoryFilter(e.target.value)}
-                          className="bg-transparent text-xs font-black text-slate-900 dark:text-white outline-none cursor-pointer pr-1"
-                        >
-                          <option value="Todas">Todas las Categorías</option>
-                          <option value="Agua Potable">Agua Potable</option>
-                          <option value="Alumbrado Público">Alumbrado Público</option>
-                          <option value="Vías y Aceras">Vías y Aceras</option>
-                          <option value="Gestión de Residuos">Gestión de Residuos</option>
-                          <option value="Parques y Áreas Verdes">Parques y Áreas Verdes</option>
-                          <option value="Fauna Urbana">Fauna Urbana y Limpieza</option>
-                          <option value="Shuar">Infraestructura Shuar</option>
-                        </select>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setCitizenTab('mapa')}
-                        className="px-3 py-2 bg-gradient-to-r from-[#0A4191] to-[#0C51B6] text-white hover:from-[#083373] border border-blue-400 rounded-xl font-extrabold text-xs flex items-center space-x-1 transition-all cursor-pointer shrink-0 shadow-2xs"
-                        title="Ver Mapa Interactivo Completo"
-                      >
-                        <span>Ver Completo</span>
-                        <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Direct Map Canvas Display fitted container */}
-                  <div className="w-full h-[540px] sm:h-[620px] max-w-full rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-800 shadow-inner relative bg-slate-100">
-                    <LogronoGoogleMap
-                      incidents={incidents}
-                      centerLat={-2.6280}
-                      centerLng={-78.1760}
-                      zoomLevel={14}
-                      defaultMapType="roadmap"
-                      zoomPosition="topleft"
-                      categoryFilter={inicioMapCategoryFilter}
-                      selectedSector={inicioMapSectorFilter}
-                      showRoutePanel={false}
-                      className="w-full h-full"
-                    />
-                  </div>
-                </div>
 
                 {/* Cantonal Alert Box */}
                 <div className="bg-gradient-to-r from-amber-500/15 via-amber-100 to-amber-50 dark:from-amber-950/50 dark:to-slate-900 border-2 border-amber-400 p-3 rounded-2xl flex items-start space-x-2.5 text-xs shadow-xs">
@@ -2179,26 +2097,26 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                         {/* Attach Photo Section */}
                         <div className="space-y-2">
                           <label className="block text-xs font-bold text-[#0A4191]">
-                            Adjuntar fotografía
+                            Fotografía adjunta
                           </label>
 
                           <div className="grid grid-cols-2 gap-3">
                             {/* Left Photo Preview Box */}
-                            <div className="relative h-28 rounded-2xl overflow-hidden border-2 border-[#0A4191] bg-blue-50 shadow-sm group">
+                            <div className="relative h-[192px] sm:h-[300px] rounded-2xl overflow-hidden border-2 border-[#0A4191] bg-blue-50 shadow-md group">
                               <img
                                 src={photoUrl}
                                 alt="Vista previa de incidencia"
                                 className="w-full h-full object-cover"
                               />
-                              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <span className="text-[10px] bg-[#0A4191] text-white px-2 py-0.5 rounded-full font-bold">
+                              <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span className="text-xs bg-[#0A4191] text-white px-3 py-1 rounded-full font-bold shadow-sm">
                                   Vista Previa
                                 </span>
                               </div>
                             </div>
 
                             {/* Right Camera Upload Box */}
-                            <label className="h-28 rounded-2xl border-2 border-dashed border-[#0A4191] bg-blue-50/50 hover:bg-blue-100/60 flex flex-col items-center justify-center text-[#0A4191] cursor-pointer transition-all shadow-sm">
+                            <label className="h-[192px] sm:h-[300px] rounded-2xl border-2 border-dashed border-[#0A4191] bg-blue-50/50 hover:bg-blue-100/70 flex flex-col items-center justify-center text-[#0A4191] cursor-pointer transition-all shadow-sm group">
                               <input
                                 type="file"
                                 accept="image/*"
@@ -2216,11 +2134,14 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                                   }
                                 }}
                               />
-                              <div className="w-10 h-10 rounded-full bg-blue-100 border border-[#0A4191] flex items-center justify-center mb-1 text-[#0A4191]">
-                                <Camera className="w-5 h-5 stroke-[2.5]" />
+                              <div className="w-14 h-14 rounded-full bg-blue-100/90 border-2 border-[#0A4191] flex items-center justify-center mb-2 text-[#0A4191] group-hover:scale-105 group-hover:bg-white transition-transform shadow-xs">
+                                <Camera className="w-7 h-7 stroke-[2.5]" />
                               </div>
-                              <span className="text-[10px] font-bold text-[#0A4191]">
+                              <span className="text-xs sm:text-sm font-black text-[#0A4191]">
                                 Tomar / Subir Foto
+                              </span>
+                              <span className="text-[10px] text-blue-600/75 font-medium mt-0.5">
+                                JPG, PNG o cámara en vivo
                               </span>
                             </label>
                           </div>
@@ -3905,44 +3826,12 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
               </div>
             )}
 
-            {/* TAB 6: DIRECTORIO */}
+            {/* TAB 6: DIRECTORIO MUNICIPAL */}
             {citizenTab === 'directorio' && (
-              <div className="space-y-3 text-xs">
-                <div className="border-b border-slate-200 dark:border-slate-800 pb-2">
-                  <h3 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center space-x-1.5">
-                    <PhoneCall className="w-4 h-4 text-[#0A4191]" />
-                    <span>Directorio Municipal & Parroquia</span>
-                  </h3>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700">
-                    <h4 className="font-bold text-[#0A4191] dark:text-blue-400">Área de TICs & Soporte</h4>
-                    <p className="text-slate-600 dark:text-slate-300 mt-0.5">Resp: Olguer Ankuash</p>
-                    <a href="tel:0961167612" className="text-[11px] text-emerald-600 dark:text-emerald-400 font-black block mt-1 hover:underline">
-                      📞 Cel: 0961167612
-                    </a>
-                  </div>
-
-                  <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700">
-                    <h4 className="font-bold text-[#0A4191] dark:text-blue-400">Alcaldía Cantón Logroño</h4>
-                    <p className="text-slate-600 dark:text-slate-300 mt-0.5">Palacio Municipal, Calle 10 de Agosto</p>
-                    <span className="text-[10px] text-slate-500 block mt-1 font-semibold">Tel: (07) 2700-100</span>
-                  </div>
-
-                  <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700">
-                    <h4 className="font-bold text-[#0A4191] dark:text-blue-400">GAD Parroquial de Yaupi</h4>
-                    <p className="text-slate-600 dark:text-slate-300 mt-0.5">Centro Poblado Yaupi, Morona Santiago</p>
-                    <span className="text-[10px] text-slate-500 block mt-1 font-semibold">Coordinación Shuar</span>
-                  </div>
-
-                  <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700">
-                    <h4 className="font-bold text-[#0A4191] dark:text-blue-400">GAD Parroquial de Shimpis</h4>
-                    <p className="text-slate-600 dark:text-slate-300 mt-0.5">Plaza Central Shimpis</p>
-                    <span className="text-[10px] text-slate-500 block mt-1 font-semibold">Agua Potable & Obras</span>
-                  </div>
-                </div>
-              </div>
+              <MunicipalDirectory
+                onBack={() => setCitizenTab('inicio')}
+                lang={lang}
+              />
             )}
 
             {/* TAB 7: NOTICIAS (PLANTILLA PERSONALIZADA DE NOTICIAS CON ESTÉTICA COMBINADA, TABLA Y BOTONES PROFESIONALES) */}

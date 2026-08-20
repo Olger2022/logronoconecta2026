@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ActiveTab, LanguageMode, UserProfile } from '../types';
 import { SHUAR_DICTIONARY } from '../data/shuarDictionary';
 import { BreadcrumbNav, BreadcrumbStep } from './BreadcrumbNav';
+import { AdminLoginModal } from './AdminLoginModal';
 import { 
   Building2, 
   Smartphone, 
@@ -14,6 +15,8 @@ import {
   LogOut,
   UserCheck,
   AlertTriangle,
+  Lock,
+  ShieldCheck,
   X
 } from 'lucide-react';
 
@@ -28,6 +31,7 @@ interface HeaderProps {
   isLogroBotOpen?: boolean;
   currentUser?: UserProfile | null;
   onLogout?: () => void;
+  onAdminLoginSuccess?: (user: UserProfile) => void;
   breadcrumbHistory?: BreadcrumbStep[];
   breadcrumbIndex?: number;
   onNavigateToStep?: (index: number) => void;
@@ -46,6 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
   isLogroBotOpen = false,
   currentUser,
   onLogout,
+  onAdminLoginSuccess,
   breadcrumbHistory,
   breadcrumbIndex = 0,
   onNavigateToStep,
@@ -53,6 +58,17 @@ export const Header: React.FC<HeaderProps> = ({
   onResetToHome
 }) => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showAdminLoginModal, setShowAdminLoginModal] = useState(false);
+
+  const isAdmin = currentUser?.role === 'admin';
+
+  const handlePanelGadClick = () => {
+    if (isAdmin) {
+      setActiveTab('admin_dashboard');
+    } else {
+      setShowAdminLoginModal(true);
+    }
+  };
 
   return (
     <header className="bg-white text-[#0A4191] shadow-md border-b-2 border-[#0A4191] sticky top-0 z-40">
@@ -175,16 +191,24 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             id="nav-tab-admin-dashboard"
-            onClick={() => setActiveTab('admin_dashboard')}
-            title="Panel Municipal GAD"
-            className={`flex items-center space-x-2 px-2.5 sm:px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer border-2 border-[#0A4191] ${
+            onClick={handlePanelGadClick}
+            title={isAdmin ? "Panel Municipal GAD (Sesión Activa)" : "Ingresar al Panel Municipal GAD con Usuario y Contraseña"}
+            className={`flex items-center space-x-2 px-2.5 sm:px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer border-2 border-[#0A4191] relative group active:scale-95 ${
               activeTab === 'admin_dashboard'
-                ? 'bg-blue-50 text-[#0A4191] shadow-xs font-black ring-2 ring-[#0A4191]/20'
+                ? 'bg-[#0A4191] text-white shadow-md font-black ring-2 ring-[#0A4191]/30'
                 : 'bg-white text-[#0A4191] hover:bg-blue-50'
             }`}
           >
-            <LayoutDashboard className="w-4 h-4 flex-shrink-0 text-[#0A4191]" />
+            <LayoutDashboard className={`w-4 h-4 flex-shrink-0 ${activeTab === 'admin_dashboard' ? 'text-amber-300' : 'text-[#0A4191]'}`} />
             <span className="hidden sm:inline">Panel GAD</span>
+            {!isAdmin ? (
+              <span className="flex items-center text-[10px] text-amber-600 bg-amber-50 px-1 py-0.2 rounded border border-amber-300 font-bold" title="Requiere Login">
+                <Lock className="w-2.5 h-2.5 mr-0.5" />
+                <span className="hidden md:inline">Login</span>
+              </span>
+            ) : (
+              <span className="w-2 h-2 rounded-full bg-emerald-400 border border-white" title="Sesión Administrador Activa" />
+            )}
           </button>
 
           <button
@@ -215,6 +239,20 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </nav>
       </div>
+
+      {/* Admin Login Modal */}
+      <AdminLoginModal
+        isOpen={showAdminLoginModal}
+        onClose={() => setShowAdminLoginModal(false)}
+        lang={lang}
+        onLoginSuccess={(adminUser) => {
+          if (onAdminLoginSuccess) {
+            onAdminLoginSuccess(adminUser);
+          } else {
+            setActiveTab('admin_dashboard');
+          }
+        }}
+      />
 
       {/* Interactive Breadcrumb Navigation History Bar */}
       {breadcrumbHistory && breadcrumbHistory.length > 0 && onNavigateToStep && onGoBack && onResetToHome && (

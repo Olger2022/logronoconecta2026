@@ -268,6 +268,13 @@ export default function App() {
     }, 350);
   };
 
+  // Dedicated Admin Login Handler
+  const handleAdminLoginSuccess = (adminUser: UserProfile) => {
+    setCurrentUser(adminUser);
+    setActiveTab('admin_dashboard');
+    pushNavigationStep('admin_dashboard', citizenSubTab, selectedNews, adminSubTab);
+  };
+
   // Logout Callback
   const handleLogout = () => {
     setCurrentUser(null);
@@ -358,6 +365,7 @@ export default function App() {
         isLogroBotOpen={isLogroBotOpen}
         currentUser={currentUser}
         onLogout={handleLogout}
+        onAdminLoginSuccess={handleAdminLoginSuccess}
         breadcrumbHistory={history}
         breadcrumbIndex={currentIndex}
         onNavigateToStep={handleNavigateToStep}

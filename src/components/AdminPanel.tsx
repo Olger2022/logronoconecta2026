@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Incident, IncidentStatus, IncidentPriority, LogronoSector } from '../types';
 import { LogronoGoogleMap } from './LogronoGoogleMap';
+import { RouteGpsModal } from './RouteGpsModal';
 import { ReportIncidentChat } from './ReportIncidentChat';
 import { 
   LayoutDashboard, 
@@ -73,6 +74,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Real-Time Selected Map Incident State
   const [selectedMapIncident, setSelectedMapIncident] = useState<Incident | null>(null);
+
+  // Dedicated GPS Route Navigation Modal State
+  const [selectedRouteIncident, setSelectedRouteIncident] = useState<Incident | null>(null);
 
   // Inspector Modal
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
@@ -522,14 +526,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <button
                               type="button"
                               onClick={() => {
-                                setSelectedMapIncident(inc);
-                                const el = document.getElementById('gad-realtime-map-section');
-                                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                const originLat = -2.6280;
+                                const originLng = -78.1760;
+                                const targetLat = inc.location.lat || -2.6280;
+                                const targetLng = inc.location.lng || -78.1760;
+                                const gmapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLng}&destination=${targetLat},${targetLng}&travelmode=driving`;
+                                window.open(gmapsUrl, '_blank');
+                                setSelectedRouteIncident(inc);
                               }}
                               className="bg-gradient-to-r from-[#0A4191] to-[#0d52b8] hover:from-[#083373] hover:to-[#0A4191] text-white text-[10px] font-extrabold px-2.5 py-1 rounded-lg shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center space-x-1 w-fit active:scale-95"
+                              title="Abrir mapa de Google Maps y dibujar la ruta de llegada"
                             >
                               <Route className="w-3 h-3 text-amber-300" />
-                              <span>{selectedMapIncident?.id === inc.id ? 'Mapa Activo' : 'Ver Ruta GPS'}</span>
+                              <span>Ver Ruta GPS</span>
                             </button>
                           </div>
                         </td>
@@ -773,14 +782,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <button
                               type="button"
                               onClick={() => {
-                                setSelectedMapIncident(inc);
-                                const el = document.getElementById('gad-archived-map-section');
-                                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                const originLat = -2.6280;
+                                const originLng = -78.1760;
+                                const targetLat = inc.location.lat || -2.6280;
+                                const targetLng = inc.location.lng || -78.1760;
+                                const gmapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLng}&destination=${targetLat},${targetLng}&travelmode=driving`;
+                                window.open(gmapsUrl, '_blank');
+                                setSelectedRouteIncident(inc);
                               }}
                               className="text-[10px] font-extrabold text-[#0A4191] hover:underline flex items-center space-x-1 cursor-pointer"
+                              title="Ver mapa con ruta de acceso al punto de incidencia"
                             >
                               <Route className="w-3 h-3 text-[#0A4191]" />
-                              <span>Ver Mapa Resuelto</span>
+                              <span>Ver Ruta GPS</span>
                             </button>
                           </div>
                         </td>
@@ -1096,6 +1110,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
           </div>
         </div>
+      )}
+
+      {/* Dedicated GPS Route Navigation Modal */}
+      {selectedRouteIncident && (
+        <RouteGpsModal
+          incident={selectedRouteIncident}
+          onClose={() => setSelectedRouteIncident(null)}
+          onOpenInspector={(inc) => handleOpenInspector(inc)}
+        />
       )}
 
     </div>

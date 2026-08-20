@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import L from 'leaflet';
 import { Incident, IncidentStatus, LogronoSector } from '../types';
-import { MapPin, Navigation, Layers, Filter, CheckCircle2, Sparkles, LocateFixed, Compass, AlertCircle, Volume2, VolumeX, Share2, Send, Play, Square, Check, Route, Building2, Boxes, Eye } from 'lucide-react';
+import { MapPin, Navigation, Layers, Filter, CheckCircle2, Sparkles, LocateFixed, Compass, AlertCircle, Volume2, VolumeX, Share2, Send, Play, Square, Check, Route, Building2, Boxes, Eye, Link as LinkIcon, Copy, ExternalLink } from 'lucide-react';
 
 // Logroño, Morona Santiago, Ecuador
 const LOGRONO_CENTER: [number, number] = [-2.6280, -78.1760];
@@ -386,6 +386,12 @@ export const LogronoGoogleMap: React.FC<LogronoGoogleMapProps> = ({
     lat: selectedLat || centerLat,
     lng: selectedLng || centerLng
   });
+
+  // Real-Time Location Link Generation State
+  const [realLocationLink, setRealLocationLink] = useState<string>('');
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [locationDetails, setLocationDetails] = useState<{ lat: number; lng: number; accuracy?: number; timestamp?: string } | null>(null);
 
   // Voice Navigation State
   const [isVoiceSpeaking, setIsVoiceSpeaking] = useState(false);
@@ -1306,6 +1312,131 @@ export const LogronoGoogleMap: React.FC<LogronoGoogleMapProps> = ({
     );
   };
 
+  // Generador de Enlace de Ubicación Real GPS en Tiempo Real
+  const handleGenerateRealLocationLink = () => {
+    setIsGeneratingLink(true);
+    setGpsStatusMessage('📍 Accediendo a tu GPS para generar enlace de ubicación real...');
+
+    if (!navigator.geolocation) {
+      const lat = activeCoords.lat || centerLat;
+      const lng = activeCoords.lng || centerLng;
+      const generatedUrl = `https://www.google.com/maps?q=${lat.toFixed(6)},${lng.toFixed(6)}`;
+      setRealLocationLink(generatedUrl);
+      setLocationDetails({
+        lat,
+        lng,
+        timestamp: new Date().toLocaleTimeString()
+      });
+      setIsGeneratingLink(false);
+      setGpsStatusMessage('⚠️ Geolocalización no disponible en el navegador. Se generó enlace con la ubicación del mapa.');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setIsGeneratingLink(false);
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const accuracy = position.coords.accuracy;
+
+        const generatedUrl = `https://www.google.com/maps?q=${lat.toFixed(6)},${lng.toFixed(6)}`;
+        setRealLocationLink(generatedUrl);
+        setLocationDetails({
+          lat,
+          lng,
+          accuracy,
+          timestamp: new Date().toLocaleTimeString()
+        });
+        setActiveCoords({ lat, lng });
+
+        // Update map position and add pulsing marker
+        if (mapInstanceRef.current) {
+          if (userLocationMarkerRef.current) {
+            userLocationMarkerRef.current.remove();
+            userLocationMarkerRef.current = null;
+          }
+          if (userAccuracyCircleRef.current) {
+            userAccuracyCircleRef.current.remove();
+            userAccuracyCircleRef.current = null;
+          }
+
+          const userPinHtml = `
+            <div style="position:relative; width:32px; height:32px; display:flex; align-items:center; justify-content:center;">
+              <div style="position:absolute; width:32px; height:32px; background:rgba(14, 165, 233, 0.4); border-radius:50%; animation:ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+              <div style="width:18px; height:18px; background:#0284c7; border:3px solid #ffffff; border-radius:50%; box-shadow:0 0 12px rgba(2,132,199,0.9); z-index:2;"></div>
+            </div>
+          `;
+
+          const userIcon = L.divIcon({
+            html: userPinHtml,
+            className: 'user-gps-pin-icon',
+            iconSize: [32, 32],
+            iconAnchor: [16, 16]
+          });
+
+          userLocationMarkerRef.current = L.marker([lat, lng], { icon: userIcon })
+            .addTo(mapInstanceRef.current)
+            .bindPopup(`
+              <div style="padding:4px; font-family:sans-serif; text-align:center;">
+                <strong style="color:#0284c7; font-size:12px;">📍 Tu Posición Real</strong><br/>
+                <span style="font-size:10px; color:#475569;">GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}</span><br/>
+                <span style="font-size:9px; color:#0A4191; font-weight:bold;">Precisión: ±${Math.round(accuracy || 10)}m</span>
+              </div>
+            `);
+
+          if (accuracy && accuracy > 0) {
+            userAccuracyCircleRef.current = L.circle([lat, lng], {
+              radius: Math.max(accuracy, 25),
+              color: '#0284c7',
+              fillColor: '#38bdf8',
+              fillOpacity: 0.15,
+              weight: 1.5
+            }).addTo(mapInstanceRef.current);
+          }
+
+          mapInstanceRef.current.flyTo([lat, lng], 16, {
+            duration: 1.2
+          });
+        }
+
+        const { sector, address } = getSectorFromCoords(lat, lng);
+        setGpsStatusMessage(`✅ Ubicación real generada en ${sector} (±${Math.round(accuracy || 10)}m)`);
+
+        if (onLocationSelect) {
+          onLocationSelect(lat, lng, address, sector);
+        }
+      },
+      (error) => {
+        setIsGeneratingLink(false);
+        console.warn('Geolocation error for link generation:', error);
+
+        const lat = activeCoords.lat || centerLat;
+        const lng = activeCoords.lng || centerLng;
+        const generatedUrl = `https://www.google.com/maps?q=${lat.toFixed(6)},${lng.toFixed(6)}`;
+        setRealLocationLink(generatedUrl);
+        setLocationDetails({
+          lat,
+          lng,
+          timestamp: new Date().toLocaleTimeString()
+        });
+
+        setGpsStatusMessage('📍 Enlace generado con las coordenadas del mapa.');
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
+
+  const handleCopyRealLink = () => {
+    if (!realLocationLink) return;
+    navigator.clipboard.writeText(realLocationLink);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
+
   const handleFlyToSector = (lat: number, lng: number, zoom = 15) => {
     if (mapInstanceRef.current) {
       mapInstanceRef.current.flyTo([lat, lng], zoom, { duration: 1 });
@@ -1606,111 +1737,119 @@ export const LogronoGoogleMap: React.FC<LogronoGoogleMapProps> = ({
         )}
       </div>
 
-      {/* Interactive Route Panel & Voice Navigation Controls */}
-      {showRoutePanel && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 shadow-sm space-y-3 animate-in fade-in">
-          {/* Header row: Route badge + Distance + Time */}
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2.5">
-            <div className="flex items-center space-x-2">
-              <div className="w-7 h-7 rounded-lg bg-[#0A4191]/10 text-[#0A4191] dark:bg-blue-950 dark:text-blue-400 flex items-center justify-center">
-                <Route className="w-4 h-4 stroke-[2.5]" />
-              </div>
-              <div>
-                <h4 className="font-extrabold text-slate-900 dark:text-white text-xs leading-tight">
-                  Ruta Recorrido al GAD Municipal Logroño
-                </h4>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-                  Origen: {currentSectorInfo.sector}
-                </p>
-              </div>
+      {/* Contenedor del Generador y Visualizador del Enlace de Ubicación Real */}
+      <div className="bg-gradient-to-r from-slate-900 via-[#0A4191] to-slate-900 border-2 border-[#0A4191] rounded-2xl p-4 sm:p-5 shadow-lg space-y-3.5 text-white animate-in fade-in">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/15 pb-3">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/40 text-blue-300 flex items-center justify-center shrink-0 shadow-inner">
+              <LocateFixed className="w-5 h-5 text-amber-300" />
             </div>
-
-            <div className="flex items-center space-x-2 text-[11px] font-mono">
-              <span className="bg-blue-50 dark:bg-blue-950/80 text-[#0A4191] dark:text-blue-300 px-2 py-0.5 rounded-md font-bold border border-blue-100 dark:border-blue-900">
-                📏 {routeDistanceKm} km
-              </span>
-              <span className="bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md font-bold border border-emerald-100 dark:border-emerald-900">
-                ⏱️ ~{routeTimeMin} min
-              </span>
+            <div>
+              <h4 className="font-black text-sm sm:text-base text-white leading-tight">
+                Generador de Enlace de Ubicación Real
+              </h4>
+              <p className="text-[11px] text-blue-200 font-medium mt-0.5">
+                Haz clic en el botón para obtener y generar automáticamente el enlace de tu ubicación real en tiempo real.
+              </p>
             </div>
           </div>
 
-          {/* Action Buttons Row: Voice Guidance, WhatsApp Share, GAD Dispatch */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {/* 1. Direccionar con Voz GPS */}
-            <button
-              type="button"
-              onClick={() => {
-                if (isVoiceSpeaking) {
-                  stopGpsVoice();
-                } else {
-                  speakGpsInstruction();
-                }
-              }}
-              className={`py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-xs ${
-                isVoiceSpeaking
-                  ? 'bg-amber-500 hover:bg-amber-600 text-white animate-pulse'
-                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-              }`}
-              title="Escuchar navegación guiada por voz GPS en español"
-            >
-              {isVoiceSpeaking ? (
-                <>
-                  <VolumeX className="w-4 h-4" />
-                  <span>Detener Voz GPS</span>
-                </>
-              ) : (
-                <>
-                  <Volume2 className="w-4 h-4" />
-                  <span>Voz del GPS</span>
-                </>
-              )}
-            </button>
+          {/* Botón que al dar click genera automáticamente el enlace de la ubicación real */}
+          <button
+            type="button"
+            onClick={handleGenerateRealLocationLink}
+            disabled={isGeneratingLink}
+            className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-extrabold text-xs sm:text-sm flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-md active:scale-95 disabled:opacity-75 shrink-0 border border-emerald-300/40"
+          >
+            <LocateFixed className={`w-4 h-4 text-emerald-100 ${isGeneratingLink ? 'animate-spin' : ''}`} />
+            <span>{isGeneratingLink ? 'Obteniendo GPS Real...' : 'Generar Enlace de Ubicación Real'}</span>
+          </button>
+        </div>
 
-            {/* 2. Compartir en WhatsApp */}
-            <button
-              type="button"
-              onClick={handleShareWhatsApp}
-              className="py-2 px-3 bg-[#25D366] hover:bg-emerald-600 text-white rounded-xl text-xs font-black flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-xs"
-              title="Compartir mapa, ruta y coordenadas por WhatsApp"
-            >
-              <Share2 className="w-4 h-4" />
-              <span>Compartir WhatsApp</span>
-            </button>
+        {/* Cuadro de texto donde se visualiza el link */}
+        <div className="space-y-2">
+          <label className="text-[11px] font-black text-blue-200 uppercase tracking-wider block">
+            Cuadro de Texto - Enlace Generado:
+          </label>
+          
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-blue-400">
+                <LinkIcon className="w-4 h-4 text-blue-300" />
+              </div>
+              <input
+                type="text"
+                readOnly
+                value={realLocationLink || ''}
+                placeholder="Presiona 'Generar Enlace de Ubicación Real' para visualizar aquí el enlace..."
+                className="w-full bg-slate-950/90 border-2 border-blue-400/60 rounded-xl pl-9 pr-3 py-2.5 text-xs sm:text-sm text-emerald-300 font-mono focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-inner select-all"
+              />
+            </div>
 
-            {/* 3. Enviar a Panel GAD (Dar trámite real) */}
-            <button
-              type="button"
-              onClick={handleDispatchToGAD}
-              disabled={isSentToGAD}
-              className="py-2 px-3 bg-[#0A4191] hover:bg-blue-900 text-white rounded-xl text-xs font-black flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-xs disabled:opacity-80"
-              title="Ingresar solicitud a la bandeja del GAD Municipal para trámite inmediato"
-            >
-              {isSentToGAD ? (
-                <>
-                  <Check className="w-4 h-4 text-emerald-300" />
-                  <span>Enviado a GAD</span>
-                </>
-              ) : (
-                <>
-                  <Building2 className="w-4 h-4 text-amber-300" />
-                  <span>Trámite Real GAD</span>
-                </>
-              )}
-            </button>
+            {realLocationLink && (
+              <div className="flex items-center space-x-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleCopyRealLink}
+                  className={`px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-xs border active:scale-95 ${
+                    copiedLink
+                      ? 'bg-emerald-500 text-white border-emerald-400'
+                      : 'bg-white/15 hover:bg-white/25 text-white border-white/20'
+                  }`}
+                  title="Copiar enlace al portapapeles"
+                >
+                  {copiedLink ? (
+                    <>
+                      <Check className="w-4 h-4 text-white" />
+                      <span>¡Copiado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4 text-blue-200" />
+                      <span>Copiar Enlace</span>
+                    </>
+                  )}
+                </button>
+
+                <a
+                  href={realLocationLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-2.5 bg-[#0A4191] hover:bg-blue-600 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all shadow-xs border border-blue-400/40 active:scale-95"
+                  title="Abrir enlace en Google Maps"
+                >
+                  <ExternalLink className="w-4 h-4 text-white" />
+                  <span>Abrir Enlace</span>
+                </a>
+              </div>
+            )}
           </div>
 
-          {/* Success Banner when sent to GAD */}
-          {gadTrackingCode && (
-            <div className="bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-800 p-2.5 rounded-xl text-[11px] font-bold text-emerald-800 dark:text-emerald-200 flex items-center space-x-2 animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>
-                ¡Trámite Nº <strong className="font-mono text-[#0A4191] dark:text-blue-300">{gadTrackingCode}</strong> derivado exitosamente a la mesa de entrada del GAD Municipal de Logroño!
+          {/* Datos de Coordenadas y Precisión */}
+          {locationDetails && (
+            <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono text-blue-200 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 mt-2">
+              <span className="flex items-center space-x-1">
+                <MapPin className="w-3.5 h-3.5 text-amber-300" />
+                <span>Latitud: <strong className="text-white">{locationDetails.lat.toFixed(6)}</strong></span>
               </span>
+              <span className="flex items-center space-x-1">
+                <MapPin className="w-3.5 h-3.5 text-amber-300" />
+                <span>Longitud: <strong className="text-white">{locationDetails.lng.toFixed(6)}</strong></span>
+              </span>
+              {locationDetails.accuracy && (
+                <span className="text-emerald-300 font-bold">
+                  Precisión GPS: ±{Math.round(locationDetails.accuracy)}m
+                </span>
+              )}
+              {locationDetails.timestamp && (
+                <span className="text-slate-400">
+                  Hora: {locationDetails.timestamp}
+                </span>
+              )}
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
