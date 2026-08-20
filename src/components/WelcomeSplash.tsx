@@ -376,7 +376,7 @@ export const WelcomeSplash: React.FC<WelcomeSplashProps> = ({ onStart }) => {
             <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex items-center justify-between gap-1.5">
               <span className="bg-[#0A4191]/90 backdrop-blur-md text-white text-[9px] font-extrabold px-2.5 py-1 rounded-full border border-blue-300/40 shadow-sm flex items-center space-x-1">
                 <Building2 className="w-3 h-3 text-amber-400 shrink-0" />
-                <span className="truncate max-w-[130px] sm:max-w-none">Morona Santiago • Ecuador</span>
+                <span className="truncate max-w-[130px] sm:max-w-none">Logroño • Ecuador</span>
               </span>
 
               {/* Action Buttons for Image Upload / Reset */}
@@ -418,10 +418,10 @@ export const WelcomeSplash: React.FC<WelcomeSplashProps> = ({ onStart }) => {
               <div className="space-y-0.5">
                 <div className="inline-flex items-center space-x-1 bg-amber-400 text-slate-950 font-black text-[8.5px] px-1.5 py-0.5 rounded uppercase tracking-wider">
                   <TreePine className="w-2.5 h-2.5 text-slate-950" />
-                  <span>Capital Ecológica & Intercultural</span>
+                  
                 </div>
                 <h3 className="text-white font-extrabold text-xs sm:text-sm leading-tight drop-shadow-md">
-                  Gestión Cantonal e Interacción Ciudadana
+                  
                 </h3>
               </div>
 
