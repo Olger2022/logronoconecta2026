@@ -415,36 +415,6 @@ export const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess, onBack
                   </div>
                   <span>{isLoading ? 'Autenticando...' : 'Iniciar Sesión'}</span>
                 </button>
-
-                {/* Quick Autofill Presets for Testing */}
-                <div className="pt-3 border-t border-blue-200">
-                  <p className="text-[10px] font-extrabold text-[#0A4191] mb-2 uppercase tracking-wider text-center">
-                    Cuentas de prueba rápida:
-                  </p>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => autofillDemo('ciudadano')}
-                      className="p-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-lg text-[10px] font-bold text-[#0A4191] text-center transition-colors cursor-pointer"
-                    >
-                      👤 Ciudadano
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => autofillDemo('admin')}
-                      className="p-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-lg text-[10px] font-bold text-[#0A4191] text-center transition-colors cursor-pointer"
-                    >
-                      🛡️ Admin GAD
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => autofillDemo('tecnico')}
-                      className="p-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-lg text-[10px] font-bold text-[#0A4191] text-center transition-colors cursor-pointer"
-                    >
-                      🔧 Técnico
-                    </button>
-                  </div>
-                </div>
               </form>
             )}
 
@@ -675,7 +645,7 @@ export const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess, onBack
 
           {/* Footer Card Info */}
           <div className="bg-blue-50/80 p-3 border-t-2 border-[#0A4191] text-center text-[11px] text-[#0A4191] font-semibold">
-            <span>¿Necesita asistencia presencial? Visite el Despacho GAD Cantón Logroño.</span>
+            <span>¿Necesita asistencia presencial? Visite el área de TICs o comunicarse al 0961167612 - Olguer Ankuash</span>
           </div>
 
         </div>

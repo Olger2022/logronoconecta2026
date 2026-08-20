@@ -429,62 +429,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           </div>
 
-          {/* Real-Time Selected Map & GPS Route Navigation Panel */}
-          {selectedMapIncident && (
-            <div id="gad-realtime-map-section" className="bg-gradient-to-b from-white via-slate-50 to-blue-50/30 rounded-2xl border-2 border-[#0A4191] shadow-md p-4 space-y-3 text-slate-800">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b-2 border-[#0A4191]/20 pb-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0A4191] to-[#0C51B6] text-white flex items-center justify-center shadow-xs shrink-0">
-                    <Navigation className="w-5 h-5 text-amber-300 stroke-[2.5]" />
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="bg-[#0A4191] text-white font-black text-[10px] px-2.5 py-0.5 rounded-md uppercase font-mono shadow-2xs">
-                        {selectedMapIncident.code}
-                      </span>
-                      <span className="text-[11px] font-extrabold text-[#0A4191] flex items-center space-x-1">
-                        <span className="w-2 h-2 rounded-full bg-[#0A4191] animate-ping inline-block" />
-                        <span>Navegador GPS en Tiempo Real</span>
-                      </span>
-                    </div>
-                    <h3 className="text-sm font-extrabold text-slate-900 mt-0.5">
-                      Ubicación Marcada por Usuario: <span className="text-[#0A4191] font-black">{selectedMapIncident.title}</span>
-                    </h3>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="bg-slate-100 text-slate-800 text-xs font-mono font-bold px-3 py-1 rounded-lg border border-slate-300 flex items-center space-x-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#0A4191] shrink-0" />
-                    <span>GPS: {selectedMapIncident.location.lat ? selectedMapIncident.location.lat.toFixed(5) : '-2.62800'}, {selectedMapIncident.location.lng ? selectedMapIncident.location.lng.toFixed(5) : '-78.17600'}</span>
-                  </span>
-                  <span className="bg-blue-100 text-[#0A4191] text-xs font-bold px-3 py-1 rounded-lg border border-blue-200">
-                    Sector: {selectedMapIncident.location.sector}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleOpenInspector(selectedMapIncident)}
-                    className="bg-gradient-to-r from-[#0A4191] to-[#0C51B6] hover:from-[#083373] hover:to-[#0A4191] text-white text-xs font-extrabold px-3.5 py-1.5 rounded-lg shadow-xs transition-all cursor-pointer"
-                  >
-                    Atender Trámite
-                  </button>
-                </div>
-              </div>
-
-              {/* Interactive Map Component with GPS Route & Voice */}
-              <div className="rounded-xl overflow-hidden border-2 border-[#0A4191]/60 shadow-inner">
-                <LogronoGoogleMap
-                  incidents={incidents}
-                  selectedLat={selectedMapIncident.location.lat}
-                  selectedLng={selectedMapIncident.location.lng}
-                  selectableLocation={false}
-                  showRoutePanel={true}
-                  onSelectIncident={(inc) => setSelectedMapIncident(inc)}
-                  className="h-[380px] w-full"
-                />
-              </div>
-            </div>
-          )}
 
           {/* ================= CONTENEDOR DE LISTADO DE TRÁMITES ACTIVOS PENDIENTES ================= */}
           <div className="bg-gradient-to-b from-white via-slate-50/50 to-blue-50/30 rounded-2xl border-2 border-[#0A4191] shadow-lg overflow-hidden text-[#0A4191]">
@@ -747,56 +691,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
             </div>
           </div>
-
-          {/* Real-Time Selected Archived Map Section */}
-          {selectedMapIncident && (
-            <div id="gad-archived-map-section" className="bg-gradient-to-b from-white via-slate-50 to-emerald-50/20 rounded-2xl border-2 border-[#0A4191] shadow-md p-4 space-y-3 text-slate-800">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b-2 border-[#0A4191]/20 pb-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center shadow-xs shrink-0">
-                    <FileCheck className="w-5 h-5 text-emerald-200 stroke-[2.5]" />
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="bg-slate-800 text-white font-black text-[10px] px-2.5 py-0.5 rounded-md uppercase font-mono shadow-2xs">
-                        {selectedMapIncident.code}
-                      </span>
-                      <span className="text-[11px] font-extrabold text-emerald-800 flex items-center space-x-1">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Trámite Resuelto y Verificado en Terreno</span>
-                      </span>
-                    </div>
-                    <h3 className="text-sm font-extrabold text-slate-900 mt-0.5">
-                      Ubicación de Solución: <span className="text-[#0A4191] font-black">{selectedMapIncident.title}</span>
-                    </h3>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() => setSelectedCertIncident(selectedMapIncident)}
-                    className="bg-gradient-to-r from-[#0A4191] to-[#0C51B6] hover:from-[#083373] hover:to-[#0A4191] text-white text-xs font-extrabold px-3.5 py-2 rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer flex items-center space-x-1.5 active:scale-95"
-                  >
-                    <Award className="w-3.5 h-3.5 text-amber-300" />
-                    <span>Ver Certificado de Cierre</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Map displaying archived resolution point */}
-              <div className="rounded-xl overflow-hidden border-2 border-[#0A4191]/60 shadow-inner">
-                <LogronoGoogleMap
-                  incidents={resolvedIncidentsList}
-                  selectedLat={selectedMapIncident.location.lat}
-                  selectedLng={selectedMapIncident.location.lng}
-                  selectableLocation={false}
-                  showRoutePanel={true}
-                  onSelectIncident={(inc) => setSelectedMapIncident(inc)}
-                  className="h-[340px] w-full"
-                />
-              </div>
-            </div>
-          )}
 
           {/* Archived Incidents Table */}
           <div className="bg-gradient-to-b from-white via-slate-50/50 to-emerald-50/20 rounded-2xl border-2 border-[#0A4191] shadow-lg overflow-hidden text-slate-800">

@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Incident, IncidentCategory, LogronoSector, LanguageMode, AIAnalysisResult, UserProfile, AgendaEvent } from '../types';
 import { SHUAR_DICTIONARY } from '../data/shuarDictionary';
 import { LogronoGoogleMap } from './LogronoGoogleMap';
 import { WelcomeTouristMap } from './WelcomeTouristMap';
 import { ReportIncidentChat } from './ReportIncidentChat';
 import { validateName, validateEcuadorianCedula, validatePhone, validateEmail } from '../utils/validation';
+import { shuarVoiceService } from '../utils/shuarVoiceService';
+import { ShuarVoiceHUD } from './ShuarVoiceHUD';
 import { 
   PlusCircle, 
   MapPin, 
@@ -600,6 +602,23 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
     avatarUrl: currentUser?.avatarUrl || ''
   });
 
+  // Sync profileData when currentUser changes upon login
+  useEffect(() => {
+    if (currentUser) {
+      setProfileData({
+        name: currentUser.name || '',
+        email: currentUser.email || '',
+        phone: currentUser.phone || '',
+        cedula: currentUser.cedula || '',
+        sector: currentUser.sector || 'Logroño Centro (Cabecera)',
+        avatarUrl: currentUser.avatarUrl || ''
+      });
+      if (currentUser.name) setCitizenName(currentUser.name);
+      if (currentUser.phone) setCitizenPhone(currentUser.phone);
+      if (currentUser.cedula) setCitizenCedula(currentUser.cedula);
+    }
+  }, [currentUser]);
+
   // Profile Sub-modals & Edit States
   const [showMisDatosModal, setShowMisDatosModal] = useState(false);
   const [showNotifSettingsModal, setShowNotifSettingsModal] = useState(false);
@@ -695,8 +714,17 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
   // Selected Incident for Detail Modal
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
 
-  // Shuar Audio Simulation State
+  // Shuar Voice Guide State & Subscription
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [isGuideModeActive, setIsGuideModeActive] = useState(false);
+
+  useEffect(() => {
+    const unsub = shuarVoiceService.subscribe((state) => {
+      setIsPlayingAudio(state.isPlaying);
+      setIsGuideModeActive(state.isGuideModeActive);
+    });
+    return () => unsub();
+  }, []);
 
   // PQRS & Trámites Form state
   const [pqrsType, setPqrsType] = useState<'Petición' | 'Queja' | 'Reclamo' | 'Sugerencia' | 'Certificado' | 'Inspección'>('Petición');
@@ -1066,12 +1094,9 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
     }, 600);
   };
 
-  // Play Shuar Audio Narration
+  // Play Shuar Audio Narration / Toggle Voice Guide
   const playShuarAudio = () => {
-    setIsPlayingAudio(true);
-    setTimeout(() => {
-      setIsPlayingAudio(false);
-    }, 3500);
+    shuarVoiceService.toggleGuideMode();
   };
 
   // User display name helper
@@ -1420,7 +1445,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-[#0A4191]/10 via-blue-50 to-emerald-50 dark:from-slate-800 dark:via-slate-800/80 dark:to-slate-900 p-4 rounded-3xl border-2 border-blue-200 dark:border-slate-700 shadow-xs">
                   <div className="space-y-0.5">
                     <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center space-x-2 font-serif">
-                      <span>¡Hola, {userFirstName}!</span>
+                      <span>¡Hola, {userDisplayName}!</span>
                       <span className="text-2xl">👋</span>
                     </h2>
                     <p className="text-xs text-slate-600 dark:text-slate-300 font-bold">
@@ -1464,6 +1489,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                 <button
                   type="button"
                   onClick={() => {
+                    shuarVoiceService.guideAction('reportar_incidencia');
                     setReportStep('category');
                     setCitizenTab('reportar');
                   }}
@@ -1502,38 +1528,16 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                   </div>
                 </button>
 
-                {/* Shuar Culture Audio Assist Banner */}
-                <div className="bg-gradient-to-r from-amber-500/15 via-amber-100/80 to-amber-50 dark:from-amber-950/40 dark:via-slate-800 dark:to-slate-900 text-[#0A4191] dark:text-amber-200 p-3 rounded-2xl border-2 border-amber-400 flex items-center justify-between text-xs shadow-xs">
-                  <div className="flex items-center space-x-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-extrabold shadow-2xs">
-                      <Sparkles className="w-4 h-4 text-slate-950" />
-                    </div>
-                    <div>
-                      <span className="font-black text-xs text-slate-900 dark:text-amber-300 block leading-none">
-                        Shuar Chicham Audio-Guía
-                      </span>
-                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
-                        Asistente de audio e interculturalidad para la ciudadanía
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={playShuarAudio}
-                    className="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black px-3.5 py-1.5 rounded-xl text-[11px] flex items-center space-x-1.5 cursor-pointer transition-all border-2 border-amber-500 shadow-xs active:scale-95 shrink-0"
-                  >
-                    <Volume2 className="w-4 h-4" />
-                    <span>{isPlayingAudio ? 'Escuchando...' : 'Escuchar Audio'}</span>
-                  </button>
-                </div>
-
                 {/* 6 PROFESSIONAL ACTION CARDS WITH VIBRANT COMBINED COLORS */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   
                   {/* Card 1: Mis reportes */}
                   <button
                     type="button"
-                    onClick={() => setCitizenTab('mis_reportes')}
+                    onClick={() => {
+                      shuarVoiceService.guideAction('mis_reportes');
+                      setCitizenTab('mis_reportes');
+                    }}
                     className="bg-gradient-to-br from-blue-50/90 via-slate-50 to-indigo-100/70 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-900 border-2 border-blue-300 dark:border-blue-800 hover:border-[#0A4191] rounded-2xl p-3.5 flex flex-col items-center justify-center text-center shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer group hover:scale-[1.02]"
                   >
                     <div className="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl bg-gradient-to-br from-[#0A4191] to-blue-700 text-white flex items-center justify-center mb-2 shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300">
@@ -1551,6 +1555,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                   <button
                     type="button"
                     onClick={() => {
+                      shuarVoiceService.guideAction('noticias');
                       setSelectedIncident(null);
                       setCitizenTab('noticias');
                     }}
@@ -1571,6 +1576,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                   <button
                     type="button"
                     onClick={() => {
+                      shuarVoiceService.guideAction('agenda');
                       setSelectedIncident(null);
                       setCitizenTab('agenda');
                     }}
@@ -1590,7 +1596,10 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                   {/* Card 4: Emergencias */}
                   <button
                     type="button"
-                    onClick={() => setShowEmergencyModal(true)}
+                    onClick={() => {
+                      shuarVoiceService.guideAction('emergencias');
+                      setShowEmergencyModal(true);
+                    }}
                     className="bg-gradient-to-br from-red-100/90 via-rose-50 to-amber-100/80 dark:from-red-950/60 dark:via-slate-800 dark:to-slate-900 border-2 border-red-400 dark:border-red-700 hover:border-red-600 rounded-2xl p-3.5 flex flex-col items-center justify-center text-center shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer group hover:scale-[1.02]"
                   >
                     <div className="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl bg-gradient-to-br from-red-600 to-rose-800 text-white flex items-center justify-center mb-2 shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300 animate-pulse">
@@ -1607,7 +1616,10 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                   {/* Card 5: Directorio */}
                   <button
                     type="button"
-                    onClick={() => setCitizenTab('directorio')}
+                    onClick={() => {
+                      shuarVoiceService.guideAction('directorio');
+                      setCitizenTab('directorio');
+                    }}
                     className="bg-gradient-to-br from-emerald-50/90 via-slate-50 to-teal-100/70 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-900 border-2 border-emerald-300 dark:border-emerald-800 hover:border-emerald-600 rounded-2xl p-3.5 flex flex-col items-center justify-center text-center shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer group hover:scale-[1.02]"
                   >
                     <div className="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center mb-2 shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300">
@@ -1624,7 +1636,10 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                   {/* Card 6: Trámites */}
                   <button
                     type="button"
-                    onClick={() => setCitizenTab('pqrs')}
+                    onClick={() => {
+                      shuarVoiceService.guideAction('pqrs');
+                      setCitizenTab('pqrs');
+                    }}
                     className="bg-gradient-to-br from-amber-50/90 via-slate-50 to-yellow-100/70 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-900 border-2 border-amber-300 dark:border-amber-800 hover:border-amber-600 rounded-2xl p-3.5 flex flex-col items-center justify-center text-center shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer group hover:scale-[1.02]"
                   >
                     <div className="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl bg-gradient-to-br from-amber-600 to-orange-700 text-white flex items-center justify-center mb-2 shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300">
@@ -1891,6 +1906,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                       <button
                         type="button"
                         onClick={() => {
+                          shuarVoiceService.guideAction('cat_alumbrado');
                           setCategory('Alumbrado Público');
                           setTitle('Poste de luz quemado');
                           if (!description) setDescription('El poste de luz frente a mi casa no funciona desde hace 3 días.');
@@ -1912,6 +1928,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                       <button
                         type="button"
                         onClick={() => {
+                          shuarVoiceService.guideAction('cat_agua');
                           setCategory('Agua Potable y Alcantarillado');
                           setTitle('Fuga de agua en acera principal');
                           if (!description) setDescription('Fuga de agua constante en la acometida de la vivienda.');
@@ -1933,6 +1950,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                       <button
                         type="button"
                         onClick={() => {
+                          shuarVoiceService.guideAction('cat_agua');
                           setCategory('Agua Potable y Alcantarillado');
                           setTitle('Alcantarilla obstruida');
                           if (!description) setDescription('Tapa de alcantarilla corrida y rebose de agua lluvia.');
@@ -1954,6 +1972,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                       <button
                         type="button"
                         onClick={() => {
+                          shuarVoiceService.guideAction('cat_vias');
                           setCategory('Vías y Aceras');
                           setTitle('Bache profundo en la calzada');
                           if (!description) setDescription('Bache de gran tamaño afectando el tránsito vehicular.');
@@ -1975,6 +1994,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                       <button
                         type="button"
                         onClick={() => {
+                          shuarVoiceService.guideAction('cat_limpieza');
                           setCategory('Gestión de Residuos');
                           setTitle('Contenedor desbordado');
                           if (!description) setDescription('Acumulación de basura fuera del contenedor requiere recolección.');
@@ -1996,6 +2016,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                       <button
                         type="button"
                         onClick={() => {
+                          shuarVoiceService.guideAction('cat_parques');
                           setCategory('Parques y Áreas Verdes');
                           setTitle('Mantenimiento de césped en parque');
                           if (!description) setDescription('Maleza alta en el parque central requiere corte y limpieza.');
@@ -2017,6 +2038,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                       <button
                         type="button"
                         onClick={() => {
+                          shuarVoiceService.guideAction('cat_seguridad');
                           setCategory('Fauna Urbana y Limpieza');
                           setTitle('Limpieza de espacio público');
                           if (!description) setDescription('Solicitud de desbroce y desinfección en espacio comunal.');
@@ -2038,6 +2060,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                       <button
                         type="button"
                         onClick={() => {
+                          shuarVoiceService.guideAction('cat_shuar');
                           setCategory('Infraestructura Shuar / Comunitaria');
                           setTitle('Inspección de obra comunitaria Shuar');
                           if (!description) setDescription('Solicitud de mantenimiento técnico en infraestructura comunal.');
@@ -3892,7 +3915,15 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
                   </h3>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    <h4 className="font-bold text-[#0A4191] dark:text-blue-400">Área de TICs & Soporte</h4>
+                    <p className="text-slate-600 dark:text-slate-300 mt-0.5">Resp: Olguer Ankuash</p>
+                    <a href="tel:0961167612" className="text-[11px] text-emerald-600 dark:text-emerald-400 font-black block mt-1 hover:underline">
+                      📞 Cel: 0961167612
+                    </a>
+                  </div>
+
                   <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700">
                     <h4 className="font-bold text-[#0A4191] dark:text-blue-400">Alcaldía Cantón Logroño</h4>
                     <p className="text-slate-600 dark:text-slate-300 mt-0.5">Palacio Municipal, Calle 10 de Agosto</p>
@@ -5055,6 +5086,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
             <button
               type="button"
               onClick={() => {
+                shuarVoiceService.guideAction('inicio');
                 setSelectedIncident(null);
                 setCitizenTab('inicio');
               }}
@@ -5071,6 +5103,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
             <button
               type="button"
               onClick={() => {
+                shuarVoiceService.guideAction('mis_reportes');
                 setSelectedIncident(null);
                 setCitizenTab('mis_reportes');
               }}
@@ -5087,6 +5120,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
             <button
               type="button"
               onClick={() => {
+                shuarVoiceService.guideAction('reportar_incidencia');
                 setSelectedIncident(null);
                 setReportStep('category');
                 setCitizenTab('reportar');
@@ -5101,6 +5135,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
             <button
               type="button"
               onClick={() => {
+                shuarVoiceService.guideAction('noticias');
                 setSelectedIncident(null);
                 setCitizenTab('noticias');
               }}
@@ -5117,6 +5152,7 @@ export const CitizenApp: React.FC<CitizenAppProps> = ({
             <button
               type="button"
               onClick={() => {
+                shuarVoiceService.guideAction('perfil');
                 setSelectedIncident(null);
                 setCitizenTab('perfil');
               }}

@@ -15,6 +15,7 @@ import { LoginModule } from './components/LoginModule';
 import { WelcomeSplash } from './components/WelcomeSplash';
 import { BreadcrumbStep } from './components/BreadcrumbNav';
 import { TECHNICAL_PHASES } from './data/technicalPhases';
+import { ShuarVoiceHUD } from './components/ShuarVoiceHUD';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -260,6 +261,11 @@ export default function App() {
     const initialStep = createStep(targetTab, 'inicio', null, 'activas', 1);
     setHistory([initialStep]);
     setCurrentIndex(0);
+
+    // Automatically trigger and open LogroBot IA to greet the user by name upon entering the main screen
+    setTimeout(() => {
+      setIsLogroBotOpen(true);
+    }, 350);
   };
 
   // Logout Callback
@@ -348,7 +354,8 @@ export default function App() {
         setLang={setLang}
         isOnline={isOnline}
         offlineCount={offlineCount}
-        openLogroBot={() => setIsLogroBotOpen(true)}
+        openLogroBot={() => setIsLogroBotOpen(!isLogroBotOpen)}
+        isLogroBotOpen={isLogroBotOpen}
         currentUser={currentUser}
         onLogout={handleLogout}
         breadcrumbHistory={history}
@@ -358,46 +365,62 @@ export default function App() {
         onResetToHome={handleResetToHome}
       />
 
-      {/* Main View Router */}
-      <main className="flex-1 pb-12">
-        {activeTab === 'citizen_app' && (
-          <CitizenApp
-            incidents={incidents}
-            onAddIncident={handleAddIncident}
-            lang={lang}
-            isOnline={isOnline}
-            currentUser={currentUser}
-            onLogout={handleLogout}
-            activeSubTab={citizenSubTab}
-            onSubTabChange={handleCitizenSubTabChange}
-            selectedNewsItem={selectedNews}
-            onSelectNewsItem={handleSelectNewsItem}
-          />
-        )}
+      {/* Main Workspace Layout (Coupled Main Container + Right LogroBot IA Panel) */}
+      <div className="flex-1 pb-12 max-w-[1780px] w-full mx-auto px-2 sm:px-4 flex flex-col lg:flex-row items-start gap-4 transition-all duration-300">
+        
+        {/* Main View Router */}
+        <main className="flex-1 min-w-0 w-full transition-all duration-300">
+          {activeTab === 'citizen_app' && (
+            <CitizenApp
+              incidents={incidents}
+              onAddIncident={handleAddIncident}
+              lang={lang}
+              isOnline={isOnline}
+              currentUser={currentUser}
+              onLogout={handleLogout}
+              activeSubTab={citizenSubTab}
+              onSubTabChange={handleCitizenSubTabChange}
+              selectedNewsItem={selectedNews}
+              onSelectNewsItem={handleSelectNewsItem}
+            />
+          )}
 
-        {activeTab === 'admin_dashboard' && (
-          <AdminPanel
-            incidents={incidents}
-            onUpdateStatus={handleUpdateStatus}
-            activeSubTab={adminSubTab}
-            onSubTabChange={handleAdminSubTabChange}
-          />
-        )}
+          {activeTab === 'admin_dashboard' && (
+            <AdminPanel
+              incidents={incidents}
+              onUpdateStatus={handleUpdateStatus}
+              activeSubTab={adminSubTab}
+              onSubTabChange={handleAdminSubTabChange}
+            />
+          )}
 
-        {activeTab === 'tech_docs' && (
-          <TechnicalDocViewer
-            selectedPhaseId={techPhaseId}
-            onSelectPhaseId={handleSelectTechPhaseId}
-          />
-        )}
-      </main>
+          {activeTab === 'tech_docs' && (
+            <TechnicalDocViewer
+              selectedPhaseId={techPhaseId}
+              onSelectPhaseId={handleSelectTechPhaseId}
+            />
+          )}
+        </main>
 
-      {/* LogroBot Floating AI Assistant Modal */}
-      <LogroBotModal
-        isOpen={isLogroBotOpen}
-        onClose={() => setIsLogroBotOpen(false)}
-        lang={lang}
-      />
+        {/* Right Docked LogroBot IA Container */}
+        {isLogroBotOpen && (
+          <aside
+            id="panel-logrobot-docked"
+            className="w-full lg:w-[380px] xl:w-[420px] shrink-0 sticky top-20 z-30 transition-all duration-300 animate-in fade-in slide-in-from-right-4"
+          >
+            <LogroBotModal
+              isOpen={isLogroBotOpen}
+              onClose={() => setIsLogroBotOpen(false)}
+              lang={lang}
+              currentUser={currentUser}
+              isDocked={true}
+            />
+          </aside>
+        )}
+      </div>
+
+      {/* Shuar Voice Guide Assistant HUD */}
+      <ShuarVoiceHUD />
 
       {/* Footer */}
       <footer className="bg-white text-[#0A4191] text-xs py-4 px-4 border-t-2 border-[#0A4191] text-center font-bold">

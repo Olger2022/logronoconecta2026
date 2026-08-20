@@ -346,7 +346,7 @@ export const WelcomeSplash: React.FC<WelcomeSplashProps> = ({ onStart }) => {
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
-            className={`relative w-full h-[210px] sm:h-[220px] rounded-2xl overflow-hidden border-2 transition-all duration-300 shadow-xl group ${
+            className={`relative w-full h-[340px] sm:h-[380px] rounded-2xl overflow-hidden border-2 transition-all duration-300 shadow-xl group ${
               isDragging 
                 ? 'border-amber-400 scale-[1.02] ring-4 ring-amber-400/40 bg-slate-800' 
                 : 'border-[#0A4191]/80 hover:border-blue-400/70 bg-slate-950'

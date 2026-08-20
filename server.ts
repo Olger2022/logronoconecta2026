@@ -286,23 +286,24 @@ Calcula y retorna un objeto JSON estricto con las siguientes claves exactas:
 // Endpoint: LogroBot Municipal Assistant Chat
 app.post('/api/ai-chat', async (req, res) => {
   try {
-    const { message, language = 'es' } = req.body;
+    const { message, language = 'es', userName = 'Ciudadano' } = req.body;
     const ai = getGeminiClient();
 
     if (!ai) {
       const fallbackResponse = language === 'shuar'
-        ? 'Pénker Pujustin! Wi GAD Logroño IA LogroBot taitai. Yaimin takastai.'
-        : '¡Hola! Soy LogroBot, el Asistente Virtual del GAD Municipal del Cantón Logroño. Puedo ayudarte con información sobre reportes de incidencias, trámites de agua potable, patentes municipales, atención en las parroquias Yaupi y Shimpis, y emergencias.';
+        ? `Pénker Pujustin, ${userName}! Wi GAD Logroño IA LogroBot taitai. Yaimin takastai.`
+        : `¡Hola, ${userName}! Soy LogroBot, el Asistente Virtual del GAD Municipal del Cantón Logroño. Puedo orientarte sobre el registro de incidencias, trámites de agua potable, patentes municipales, y atención en las parroquias Yaupi y Shimpis.`;
       return res.json({ success: true, reply: fallbackResponse });
     }
 
     const systemInstruction = `Eres LogroBot, el asistente inteligente oficial del Gobierno Autónomo Descentralizado Municipal del Cantón Logroño (Morona Santiago, Ecuador).
+Estás conversando con el usuario: ${userName}.
 Tu misión es atender con cortesía, precisión y vocación de servicio público tanto en idioma Castellano como en idioma Shuar Chicham cuando te lo soliciten.
 El municipio abarca Logroño Centro, Parroquia Yaupi, Parroquia Shimpis y comunidades Shuar ancestrales (Kakaim, Kimius, etc.).
 Ofreces apoyo en:
 1. Cómo reportar baches, fugas de agua, fallas eléctricas o limpieza.
 2. Estado de trámites y solicitudes PQRS.
-3. Números de emergencias locales.
+3. Números de emergencias locales y directorio cantonal.
 4. Información intercultural sobre servicios del GAD.
 Si el usuario escribe en Shuar o pide respuesta Shuar, responde bilingüe (Shuar Chicham con traducción en Español).`;
 

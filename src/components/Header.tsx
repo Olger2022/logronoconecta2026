@@ -6,7 +6,6 @@ import {
   Building2, 
   Smartphone, 
   LayoutDashboard, 
-  BookOpenCheck, 
   Bot, 
   Languages, 
   Wifi, 
@@ -26,6 +25,7 @@ interface HeaderProps {
   isOnline: boolean;
   offlineCount: number;
   openLogroBot: () => void;
+  isLogroBotOpen?: boolean;
   currentUser?: UserProfile | null;
   onLogout?: () => void;
   breadcrumbHistory?: BreadcrumbStep[];
@@ -43,6 +43,7 @@ export const Header: React.FC<HeaderProps> = ({
   isOnline,
   offlineCount,
   openLogroBot,
+  isLogroBotOpen = false,
   currentUser,
   onLogout,
   breadcrumbHistory,
@@ -80,41 +81,6 @@ export const Header: React.FC<HeaderProps> = ({
               </>
             )}
           </div>
-
-          {/* User Profile Badge & Logout */}
-          {currentUser && (
-            <div className="flex items-center space-x-2 bg-white px-2.5 py-0.5 rounded-full border border-blue-300 shadow-2xs text-[11px]">
-              <UserCheck className="w-3.5 h-3.5 text-[#0A4191] flex-shrink-0" />
-              <span className="font-bold text-[#0A4191] hidden sm:inline max-w-[120px] truncate">{currentUser.name}</span>
-              {onLogout && (
-                <button
-                  type="button"
-                  onClick={() => setShowLogoutModal(true)}
-                  className="ml-1 text-red-600 hover:text-red-700 flex items-center space-x-1 font-bold hover:underline cursor-pointer"
-                  title="Cerrar sesión e ir al módulo de Login"
-                >
-                  <LogOut className="w-3.5 h-3.5 text-red-600" />
-                  <span className="text-[10px] hidden md:inline">Salir</span>
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Shuar Intercultural Language Toggle */}
-          <button
-            onClick={() => setLang(lang === 'es' ? 'shuar' : 'es')}
-            id="btn-language-toggle"
-            className="flex items-center space-x-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 px-2.5 py-0.5 rounded-full border border-amber-300 transition-colors cursor-pointer"
-            title="Cambiar idioma intercultural (Español / Shuar Chicham)"
-          >
-            <Languages className="w-3.5 h-3.5 text-amber-700 flex-shrink-0" />
-            <span className="text-[11px] font-extrabold tracking-wider hidden sm:inline">
-              {lang === 'es' ? 'ESPAÑOL' : 'SHUAR CHICHAM'}
-            </span>
-            <span className="text-[11px] font-extrabold tracking-wider sm:hidden">
-              {lang === 'es' ? 'ES' : 'SH'}
-            </span>
-          </button>
         </div>
       </div>
 
@@ -222,29 +188,31 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <button
-            id="nav-tab-tech-docs"
-            onClick={() => setActiveTab('tech_docs')}
-            title="Documentación Técnica (15 Fases)"
-            className={`flex items-center space-x-2 px-2.5 sm:px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer border-2 border-[#0A4191] ${
-              activeTab === 'tech_docs'
-                ? 'bg-blue-50 text-[#0A4191] shadow-xs font-black ring-2 ring-[#0A4191]/20'
-                : 'bg-white text-[#0A4191] hover:bg-blue-50'
-            }`}
-          >
-            <BookOpenCheck className="w-4 h-4 text-[#0A4191] flex-shrink-0" />
-            <span className="hidden md:inline">Docs (15 Fases)</span>
-          </button>
-
-          <button
             id="nav-tab-logrobot-ai"
             onClick={openLogroBot}
-            title="Asistente LogroBot IA"
-            className="flex items-center space-x-1.5 sm:space-x-2 px-2.5 sm:px-3 py-2 rounded-lg text-xs font-bold bg-white hover:bg-blue-50 text-[#0A4191] border-2 border-[#0A4191] transition-all shadow-xs cursor-pointer"
+            title={isLogroBotOpen ? "Ocultar Asistente LogroBot IA" : "Mostrar Asistente LogroBot IA"}
+            className={`flex items-center space-x-1.5 sm:space-x-2 px-2.5 sm:px-3 py-2 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer border-2 ${
+              isLogroBotOpen
+                ? 'bg-emerald-700 hover:bg-emerald-800 text-white border-emerald-600 shadow-md ring-2 ring-emerald-400/40'
+                : 'bg-white hover:bg-blue-50 text-[#0A4191] border-[#0A4191]'
+            }`}
           >
-            <Bot className="w-4 h-4 text-[#0A4191] flex-shrink-0" />
+            <Bot className={`w-4 h-4 flex-shrink-0 ${isLogroBotOpen ? 'text-amber-300' : 'text-[#0A4191]'}`} />
             <span className="hidden sm:inline">LogroBot IA</span>
             <span className="sm:hidden font-extrabold text-[11px]">IA</span>
           </button>
+
+          {onLogout && (
+            <button
+              id="nav-tab-logout"
+              onClick={() => setShowLogoutModal(true)}
+              title="Cerrar sesión / Salir"
+              className="flex items-center space-x-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-black bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border-2 border-red-500 hover:border-red-600 transition-all shadow-sm cursor-pointer whitespace-nowrap active:scale-95 group"
+            >
+              <LogOut className="w-4 h-4 flex-shrink-0 text-red-600 group-hover:text-white stroke-[2.5]" />
+              <span className="font-black">Salir</span>
+            </button>
+          )}
         </nav>
       </div>
 
