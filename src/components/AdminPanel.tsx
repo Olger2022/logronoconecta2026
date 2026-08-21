@@ -3,6 +3,7 @@ import { Incident, IncidentStatus, IncidentPriority, LogronoSector } from '../ty
 import { LogronoGoogleMap } from './LogronoGoogleMap';
 import { RouteGpsModal } from './RouteGpsModal';
 import { ReportIncidentChat } from './ReportIncidentChat';
+import { generateCertificatePDF } from '../utils/generateCertificatePDF';
 import { 
   LayoutDashboard, 
   MapPin, 
